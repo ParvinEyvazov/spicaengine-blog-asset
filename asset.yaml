@@ -1,0 +1,232 @@
+# CONTACT BUCKET
+apiVersion: buvket/v1
+kind: Schema
+metadata:
+  name: CONTACT
+spec:
+  title: Contact
+  description: Contact information of user
+  acl:
+    write: "true==true"
+    read: "true==true"
+  properties:
+    email:
+      type: string
+    instagram_link:
+      type: string
+    linkedin_link:
+      type: string
+    twitter_link:
+      type: string
+    name:
+      type: string
+    surname:
+      type: string
+---
+# CATEGORY BUCKET
+apiVersion: buvket/v1
+kind: Schema
+metadata:
+  name: category
+spec:
+  title: CATEGORY
+  description: Category of blog articles
+  acl:
+    write: "true==true"
+    read: "true==true"
+  properties:
+    category:
+      type: string
+    number_of_articles:
+      type: number
+      description: DONT TOUCH! IT WILL BE FILLED AUTOMATICALLY!
+      default: 0
+      minimum: 0
+---
+# BLOG BUCKET
+apiVersion: bucket/v1
+kind: Schema
+metadata:
+  name: blog
+spec:
+  title: BLOG
+  description: storing blogs of user
+  acl:
+    write: "true==true"
+    read: "true==true"
+  properties:
+    article:
+      type: textarea
+    average_of_rating:
+      type: number
+      description: DONT TOUCH! IT WILL BE FILLED AUTOMATICALLY!
+      default: 0
+      minimum: 0
+    category:
+      type: relation
+      relationType: onetoone
+      bucket:
+        resourseFieldRef:
+          bucketName: category
+    created_date:
+      type: date
+      default: created_at
+      description: DONT TOUCH! IT WILL BE FILLED AUTOMATICALLY!
+    images:
+      type: array
+      items:
+        type: storage
+    number_of_rating:
+      type: number
+      default: 0
+      minimum: 0
+      description: DONT TOUCH! IT WILL BE FILLED AUTOMATICALLY!
+    thumbnail:
+      type: storage
+    title:
+      type: textarea
+    updated_date:
+      type: date
+      default: updated_at
+---
+# REVIEW BUCKET
+apiVersion: bucket/v1
+kind: Schema
+metadata:
+  name: review
+spec:
+  title: REVIEW
+  description: Comments to blogs
+  acl:
+    write: "true==true"
+    read: "true=true"
+  properties:
+    blog:
+      type: relation
+      relationType: onetoone
+      bucket:
+        resourseFieldRef:
+          bucketName: blog
+    comment:
+      type: textarea
+    date:
+      type: date
+      default: created_at
+    name:
+      type: string
+    score:
+      type: number
+      minimum: 0
+      maximum: 5
+---
+# API KEY
+apiVersion: passport/v1
+kind: ApiKey
+metadata:
+  name: access-to-buckets-apikey
+spec:
+  name: Secret Api Key For Stripe Asset
+  policies:
+    - BucketFullAccess
+---
+# FUNCTION
+apiVersion: function/v1
+kind: Function
+metadata:
+  name: blog-function
+spec:
+  title: Blog Function
+  description: Desc of Functions
+  timeout: 50
+  code: ./function/triggers.js
+  runtime:
+    name: Node
+    language: Javascript
+  environment:
+    - name: SECRET_API_KEY
+      valueFrom:
+        resourseFieldRef:
+          apiKeyName: access-to-buckets-apikey
+    - name: BLOG_BUCKET_ID
+      valueFrom:
+        resourseFieldRef:
+          schemaName: blog
+    - name: CATEGORY_BUCKET_ID
+      valueFrom:
+        resourseFieldRef:
+          schemaName: category
+    - name: CONTACT_BUCKET_ID
+      valueFrom:
+        resourseFieldRef:
+          schemaName: contact
+    - name: REVIEW_BUCKET_ID
+      valueFrom:
+        resourseFieldRef:
+          schemaName: review
+  dependency:
+    - name: "@spica-devkit/bucket"
+      version: latest
+---
+# TRIGGER - ADD BLOG
+apiVersion: function/v1
+kind: Trigger
+metadata:
+  name: add-blog-trigger
+spec:
+  name: addBlog
+  func: blog-function
+  type: bucket
+  bucketOptions:
+    bucket:
+      resourceFieldRef:
+        schemaName: blog
+    phase: AFTER
+    type: INSERT
+---
+# TRIGGER - ADD REVIEW
+apiVersion: function/v1
+kind: Trigger
+metadata:
+  name: add-review-trigger
+spec:
+  name: addReview
+  func: blog-function
+  type: bucket
+  bucketOptions:
+    bucket:
+      resourceFieldRef:
+        schemaName: review
+    phase: AFTER
+    type: INSERT
+---
+# TRIGGER - DELETE BLOG
+apiVersion: function/v1
+kind: Trigger
+metadata:
+  name: delete-blog-trigger
+spec:
+  name: deleteBlog
+  func: blog-function
+  type: bucket
+  bucketOptions:
+    bucket:
+      resourceFieldRef:
+        schemaName: blog
+    phase: AFTER
+    type: DELETE
+---
+# TRIGGER - DELETE REVIEW
+apiVersion: function/v1
+kind: Trigger
+metadata:
+  name: delete-review-trigger
+spec:
+  name: deleteReview
+  func: blog-function
+  type: bucket
+  bucketOptions:
+    bucket:
+      resourceFieldRef:
+        schemaName: review
+    phase: AFTER
+    type: DELETE
