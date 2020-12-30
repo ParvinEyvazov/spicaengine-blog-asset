@@ -43,14 +43,14 @@ spec:
       default: 0
       minimum: 0
 ---
-# BLOG BUCKET
+# ARTICLE BUCKET
 apiVersion: bucket/v1
 kind: Schema
 metadata:
-  name: blog
+  name: article
 spec:
-  title: BLOG
-  description: storing blogs of user
+  title: ARTICLE
+  description: storing articles of user
   acl:
     write: "true==true"
     read: "true==true"
@@ -96,17 +96,17 @@ metadata:
   name: review
 spec:
   title: REVIEW
-  description: Comments to blogs
+  description: Comments to articles
   acl:
     write: "true==true"
     read: "true=true"
   properties:
-    blog:
+    article:
       type: relation
       relationType: onetoone
       bucket:
         resourseFieldRef:
-          bucketName: blog
+          bucketName: article
     comment:
       type: textarea
     date:
@@ -147,10 +147,10 @@ spec:
       valueFrom:
         resourseFieldRef:
           apiKeyName: access-to-buckets-apikey
-    - name: BLOG_BUCKET_ID
+    - name: ARTICLE_BUCKET_ID
       valueFrom:
         resourseFieldRef:
-          schemaName: blog
+          schemaName: article
     - name: CATEGORY_BUCKET_ID
       valueFrom:
         resourseFieldRef:
@@ -167,19 +167,19 @@ spec:
     - name: "@spica-devkit/bucket"
       version: latest
 ---
-# TRIGGER - ADD BLOG
+# TRIGGER - ADD ARTICLE
 apiVersion: function/v1
 kind: Trigger
 metadata:
-  name: add-blog-trigger
+  name: add-article-trigger
 spec:
-  name: addBlog
+  name: addArticle
   func: blog-function
   type: bucket
   bucketOptions:
     bucket:
       resourceFieldRef:
-        schemaName: blog
+        schemaName: article
     phase: AFTER
     type: INSERT
 ---
@@ -199,19 +199,19 @@ spec:
     phase: AFTER
     type: INSERT
 ---
-# TRIGGER - DELETE BLOG
+# TRIGGER - DELETE ARTICLE
 apiVersion: function/v1
 kind: Trigger
 metadata:
-  name: delete-blog-trigger
+  name: delete-article-trigger
 spec:
-  name: deleteBlog
+  name: deleteArticle
   func: blog-function
   type: bucket
   bucketOptions:
     bucket:
       resourceFieldRef:
-        schemaName: blog
+        schemaName: article
     phase: AFTER
     type: DELETE
 ---

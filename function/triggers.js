@@ -1,15 +1,15 @@
 import * as Bucket from "@spica-devkit/bucket";
 
-const BLOG_BUCKET_ID = process.env.BLOG_BUCKET_ID;
+const ARTICLE_BUCKET_ID = process.env.ARTICLE_BUCKET_ID;
 const CATEGORY_BUCKET_ID = process.env.CATEGORY_BUCKET_ID;
 const CONTACT_BUCKET_ID = process.env.CONTACT_BUCKET_ID;
 const REVIEW_BUCKET_ID = process.env.REVIEW_BUCKET_ID;
 const SECRET_API_KEY = process.env.SECRET_API_KEY;
 
-export async function addBlog(action) {
-  //when add blog increase number of article in category
-  const blog = action.current;
-  const category_id = blog.category;
+export async function addArticle(action) {
+  //when add article increase number of article in category
+  const article = action.current;
+  const category_id = article.category;
 
   Bucket.initialize({ apikey: `${SECRET_API_KEY}` });
 
@@ -32,10 +32,10 @@ export async function addBlog(action) {
   }
 }
 
-export async function deleteBlog(action) {
-  //when delete blog increase number of article in category
-  const blog = action.previous;
-  const category_id = blog.category;
+export async function deleteArticle(action) {
+  //when delete article increase number of article in category
+  const article = action.previous;
+  const category_id = article.category;
 
   Bucket.initialize({ apikey: `${SECRET_API_KEY}` });
 
@@ -59,25 +59,31 @@ export async function deleteBlog(action) {
 }
 
 export async function addReview(action) {
-  //review atilan blog-u bulup onun number_of_ration, average_of_rating-i update et
+  //review atilan article-i bulup onun number_of_ration, average_of_rating-i update et
+  console.log("process.env: ", process.env);
 
   const review = action.current;
-  const blog_id = review.blog;
+  const article_id = review.article;
+  console.log("review : ", review);
 
   Bucket.initialize({ apikey: `${SECRET_API_KEY}` });
 
-  const blog = await Bucket.data.get(`${BLOG_BUCKET_ID}`, blog_id);
+  const article = await Bucket.data.get(`${ARTICLE_BUCKET_ID}`, article_id);
 
-  blog.average_of_rating = calculateAverageWhenAdding(
-    blog.average_of_rating,
-    blog.number_of_rating,
+  console.log("article: ", article);
+
+  article.average_of_rating = calculateAverageWhenAdding(
+    article.average_of_rating,
+    article.number_of_rating,
     review.score
   );
 
-  blog.number_of_rating = blog.number_of_rating + 1;
+  console.log("updated article: ", article);
+
+  article.number_of_rating = article.number_of_rating + 1;
 
   await Bucket.data
-    .update(`${BLOG_BUCKET_ID}`, blog._id, blog)
+    .update(`${ARTICLE_BUCKET_ID}`, article._id, article)
     .then((data) => {
       console.log("Rating numbers updated", data);
     })
@@ -87,23 +93,23 @@ export async function addReview(action) {
 }
 
 export async function deleteReview(action) {
-  //review-i silinen blog-u bulup onun number_of_ration, average_of_rating-i update et
+  //review-i silinen article-i bulup onun number_of_ration, average_of_rating-i update et
   const review = action.previous;
-  const blog_id = review.blog;
+  const article_id = review.article;
 
   Bucket.initialize({ apikey: `${SECRET_API_KEY}` });
 
-  const blog = await Bucket.data.get(`${BLOG_BUCKET_ID}`, blog_id);
+  const article = await Bucket.data.get(`${ARTICLE_BUCKET_ID}`, article_id);
 
-  blog.average_of_rating = calculateAverageWhenDeleting(
-    blog.average_of_rating,
-    blog.number_of_rating,
+  article.average_of_rating = calculateAverageWhenDeleting(
+    article.average_of_rating,
+    article.number_of_rating,
     review.score
   );
-  blog.number_of_rating = blog.number_of_rating - 1;
+  article.number_of_rating = article.number_of_rating - 1;
 
   await Bucket.data
-    .update(`${BLOG_BUCKET_ID}`, blog._id, blog)
+    .update(`${ARTICLE_BUCKET_ID}`, article._id, article)
     .then((data) => {
       console.log("Rating numbers updated", data);
     })
