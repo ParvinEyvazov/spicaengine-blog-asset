@@ -2,9 +2,9 @@
 apiVersion: bucket/v1
 kind: Schema
 metadata:
-  name: CONTACT
+  name: contact
 spec:
-  title: Contact
+  title: CONTACT
   description: Contact information of user
   acl:
     write: "true==true"
@@ -12,6 +12,10 @@ spec:
   properties:
     email:
       type: string
+      description: "email"
+      options:
+        position: bottom
+        visible: true
     instagram_link:
       type: string
     linkedin_link:
@@ -22,6 +26,8 @@ spec:
       type: string
     surname:
       type: string
+  primary:
+    - title
 ---
 # CATEGORY BUCKET
 apiVersion: bucket/v1
@@ -37,6 +43,9 @@ spec:
   properties:
     category:
       type: string
+      options:
+        position: bottom
+        visible: true
     number_of_articles:
       type: number
       description: DONT TOUCH! IT WILL BE FILLED AUTOMATICALLY!
@@ -57,6 +66,9 @@ spec:
   properties:
     article:
       type: textarea
+      options:
+        position: bottom
+        visible: true
     average_of_rating:
       type: number
       description: DONT TOUCH! IT WILL BE FILLED AUTOMATICALLY!
@@ -64,10 +76,13 @@ spec:
       minimum: 0
     category:
       type: relation
+      options:
+        position: bottom
+        visible: true
       relationType: onetoone
       bucket:
-        resourseFieldRef:
-          bucketName: category
+        resourceFieldRef:
+          schemaName: category
     created_date:
       type: date
       default: created_at
@@ -99,21 +114,27 @@ spec:
   description: Comments to articles
   acl:
     write: "true==true"
-    read: "true=true"
+    read: "true==true"
   properties:
     article:
       type: relation
       relationType: onetoone
       bucket:
-        resourseFieldRef:
-          bucketName: article
+        resourceFieldRef:
+          schemaName: article
     comment:
       type: textarea
+      options:
+        position: bottom
+        visible: true
     date:
       type: date
       default: created_at
     name:
       type: string
+      options:
+        position: bottom
+        visible: true
     score:
       type: number
       minimum: 0
@@ -145,23 +166,23 @@ spec:
   environment:
     - name: SECRET_API_KEY
       valueFrom:
-        resourseFieldRef:
+        resourceFieldRef:
           apiKeyName: access-to-buckets-apikey
     - name: ARTICLE_BUCKET_ID
       valueFrom:
-        resourseFieldRef:
+        resourceFieldRef:
           schemaName: article
     - name: CATEGORY_BUCKET_ID
       valueFrom:
-        resourseFieldRef:
+        resourceFieldRef:
           schemaName: category
     - name: CONTACT_BUCKET_ID
       valueFrom:
-        resourseFieldRef:
+        resourceFieldRef:
           schemaName: contact
     - name: REVIEW_BUCKET_ID
       valueFrom:
-        resourseFieldRef:
+        resourceFieldRef:
           schemaName: review
   dependency:
     - name: "@spica-devkit/bucket"
